@@ -1,4 +1,5 @@
 exports.config = {
+    waitforTimeout: 30000, // Set to 30 seconds
     //
     // ====================
     // Runner Configuration
@@ -23,6 +24,7 @@ exports.config = {
     // will be called from there.
     //
     specs: [
+        './test/specs/**/*.js'
         // ToDo: define location for spec files here
     ],
     // Patterns to exclude.

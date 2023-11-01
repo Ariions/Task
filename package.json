@@ -17,6 +17,11 @@
     "@wdio/mocha-framework": "^8.20.3",
     "@wdio/spec-reporter": "^8.20.0",
     "appium-uiautomator2-driver": "^2.33.1",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0",
     "wdio-wait-for": "^3.0.7"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
   }
 }

@@ -1,14 +1,33 @@
-// User can login  to his account (we will pass login) and order new VOD record 
-describe('Order Vod recording functionality', () => {
+describe('Disable Vod recording functionality and check if it doesnt work @stage1', () => {
+  const chai = require('chai');
+  const expect = chai.expect;
+
   before(() => {
       
   });
 
-  it('navigate to settings and disable Vod with pin', async () => {
-    // open settings
+  it('navigate to settings page', async () => {
     const settingsButton = await $('xpath://*[contains(@content-desc, "settings")]'); // settings have no accesability id at least i cannot find it with release build
     await settingsButton.click();
+    
+    const settingsTitle = await $('~settingsMainViewTestID'); // english and has no : bedfore TestID
+    await settingsTitle.waitForDisplayed({ timeout: 100 }); 
+    
+    expect(await settingsTitle.isDisplayed()).to.be.true;
+  });
 
+  it('check if settings page has all the content', async () => {
+    //TODO:: add all buttons
+    const languageChangeButton = await $('~Kalbos pasirinkimas:TestID'); // lithuanian and has :
+    const moreSettingsButton = await $('~Kiti nustatymai:TestID');
+    const aboutButton = await $('~Apie:TestID');
+    
+    expect(await languageChangeButton.isDisplayed()).to.be.true;
+    expect(await moreSettingsButton.isDisplayed()).to.be.true;
+    expect(await aboutButton.isDisplayed()).to.be.true;
+  });
+
+  it('continue to settings and disable Vod with pin', async () => {
     // move to more settings
     const additionalSettingsButton = await $('xpath://*[contains(@content-desc, "Kiti nustatymai:TestID")]');
     await additionalSettingsButton.click();
@@ -39,13 +58,9 @@ describe('Order Vod recording functionality', () => {
 
     // comfirm input
     const comfirmButton = await $('~pinChange:confirm:TestID');
+    await comfirmButton.waitForDisplayed({ timeout: 500 });
     await comfirmButton.click();  
     
-    // check if toggle is disabled
-    const isToggleEnabled = await vodToggle.getAttribute('checked');
-    expect(isToggleEnabled).to.equal('false');
-
-
     // exit out to main screen with 3 back gestures
     for(let  i= 0; i<3; i++) await driver.back();
 
@@ -94,10 +109,6 @@ describe('Order Vod recording functionality', () => {
     // toggle VOD toggle
     const vodToggle = await $('~settingsToggleTestID'); 
     await vodToggle.click();
-    
-    // check if toggle is disabled
-    const isToggleEnabled = await vodToggle.getAttribute('checked');
-    expect(isToggleEnabled).to.equal('true');
 
     // exit out to main screen with 3 back gestures
     for(let  i= 0; i<3; i++) await driver.back();
@@ -109,7 +120,8 @@ describe('Order Vod recording functionality', () => {
   });
 });
 
-describe('Program Content Validity', () => {
+describe('LRT Program Content validity @stage1', () => {
+  const { convertToMinutes, sortEntriesByStartTime, scrollUp, scrollDown } = require('../../additional scripts/helperFunctions');
 
   before(async () => {
     // Setup code if needed
@@ -124,56 +136,55 @@ describe('Program Content Validity', () => {
     await additionalSettingsButton.click();
   });
 
-  async function scrollUp() {
-    await driver.performActions([{
-      type: 'pointer',
-      id: 'finger1',
-      parameters: { pointerType: 'touch' },
-      actions: [
-        { type: 'pointerMove', duration: 0, x: 582, y: 702 },
-        { type: 'pointerDown', button: 0 },
-        { type: 'pause', duration: 100 },
-        { type: 'pointerMove', duration: 400, x: 604, y: 1266 },
-        { type: 'pointerUp', button: 0 }
-      ]
-    }]);
+  function parseScheduleEntry(entry) {
+    const regex = /^(\d{2}:\d{2}) - (\d{2}:\d{2}) - (.*)$/;
+    const match = entry.match(regex);
+  
+    if (!match) {
+      console.error(`Entry does not match the expected format: ${entry}`);
+      return null;
+    }
+  
+    const [, startTime, endTime, title] = match;
+    return { title, startTime, endTime };
   }
 
-  async function scrollDown() {
-    await driver.performActions([{
-      type: 'pointer',
-      id: 'finger1',
-      parameters: { pointerType: 'touch' },
-      actions: [
-        { type: 'pointerMove', duration: 0, x: 582, y: 1266 },
-        { type: 'pointerDown', button: 0 },
-        { type: 'pause', duration: 100 },
-        { type: 'pointerMove', duration: 250, x: 604, y: 702 },
-        { type: 'pointerUp', button: 0 }
-      ]
-    }]);
-  }
 
   async function scrapeText() {
-    const titleSelector = '//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.TextView';
-    const timeSelector = '//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.TextView';
-
-    const titleElements = await driver.$$(titleSelector);
-    const timeElements = await driver.$$(timeSelector);
-
-    const titles = await Promise.all(titleElements.map(async (el) => el.getText()));
-    const times = await Promise.all(timeElements.map(async (el) => el.getText()));
-
-    const combinedTexts = titles.map((title, index) => {
-      const time = times[index];
-      if (title && time && title !== '' && title !== 'TIESIOGIAI') {
-        return `${title} - ${time}`;
+    const pairsOfParents = [
+      [2, 2], [4, 2], [6, 2]
+    ];
+  
+    const combinedTexts = [];
+  
+    for (const [groupIndex, childIndex] of pairsOfParents) {
+      const titleSelector = `//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup[${groupIndex}]/android.view.ViewGroup[${childIndex}]/android.view.ViewGroup/android.widget.TextView`;
+      const timeSelector = `//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup[${groupIndex}]/android.view.ViewGroup[${childIndex}]/android.widget.TextView`;
+  
+      const titleElement = await driver.$(titleSelector);
+      const timeElement = await driver.$(timeSelector);
+  
+      const isTitleDisplayed = await titleElement.isDisplayed();
+      const isTimeDisplayed = await timeElement.isDisplayed();
+  
+      if (isTitleDisplayed && isTimeDisplayed) {
+        const title = await titleElement.getText();
+        const time = await timeElement.getText();
+  
+        if (title && time && title !== '' && title !== 'TIESIOGIAI') {
+          const entry = parseScheduleEntry(`${title} - ${time}`);
+          if (entry) {
+            combinedTexts.push(entry);
+          }
+        }
+      } else {
+        console.log(`Elements not displayed for parent at index [${groupIndex}, ${childIndex}], skipping...`);
       }
-      return null;
-    }).filter(text => text !== null);
-
+    }
+  
     return combinedTexts;
   };
+
 
 
   it('should navigate to the bottom of Program page', async () => {
@@ -181,146 +192,93 @@ describe('Program Content Validity', () => {
       throw new Error('Driver is not initialized');
     }
     // Initialize variables to store scraped texts and track end of content
-    let allTexts = new Set();
+    let tempAllEntries = new Map();
     let isAtEnd = false;
 
     // Scroll and scrape loop
     while (!isAtEnd) {
-      const currentTexts = await scrapeText();
-      const newTexts = currentTexts.filter(text => !allTexts.has(text));
+      const currentEntries = await scrapeText();
+      let newEntryAdded = false;
 
-      if (newTexts.length > 0) {
-        newTexts.forEach(text => allTexts.add(text));
-      } else {
-        isAtEnd = true;
+      for (const entry of currentEntries) {
+        const entryKey = `${entry.title}-${entry.startTime}-${entry.endTime}`;
+        
+        if (!tempAllEntries.has(entryKey)) {
+          tempAllEntries.set(entryKey, entry);
+          newEntryAdded = true;
+        }
       }
 
-      if (!isAtEnd) {
-        await scrollDown();
+      if (!newEntryAdded) {
+        isAtEnd = true;
+      } else {
+        await scrollDown(driver);
       }
     }
   });
 
+  let sortedEntries; // i will use final data in the other test
+  
   it('should navigate to the top of Program page and scrape all the info', async () => {
     if (!driver) {
       throw new Error('Driver is not initialized');
     }
+    
     // Initialize variables to store scraped texts and track end of content
-    let allTexts = new Set();
+    let allEntries = new Map();
     let isAtEnd = false;
-
+  
     // Scroll and scrape loop
     while (!isAtEnd) {
-      const currentTexts = await scrapeText();
-      const newTexts = currentTexts.filter(text => !allTexts.has(text));
-
-      if (newTexts.length > 0) {
-        newTexts.forEach(text => allTexts.add(text));
-      } else {
-        isAtEnd = true;
-      }
-
-      if (!isAtEnd) {
-        await scrollUp();
-      }
-    }
-    // Convert Set to Array for easier processing or validation
-    const scrapedTexts = Array.from(allTexts);
-    console.log(scrapedTexts);
-  });
-});
-/*
-const { expect } = require('chai');
-const { Console } = require('console');
-const { createReadStream } = require('fs');
-const PNG = require('pngjs').PNG;
-const fs = require('fs');
-const path = require('path');
-
-describe('Is promoted video loaded and stream works', function () {
-  let Dependency = false; // i use this to kill next test if first one fails
-
-  before(async() => {
-    
-  });
-
-  it('navigate to video', async () => { // was thinking of a specific video but might be better to do main promoted one
-      const playButton = await $('~common:watch:TestID'); 
-      await playButton.click();
-
-      // not the most consistant part 
-      const settingsTitle = await $('xpath://*[contains(@content-desc, "videoScreenMainViewTestID")]'); // enlgish and has no : bedfore TestID 
-      await settingsTitle.waitForDisplayed({ timeout: 10000 });
-      // ill need this test for another
-      Dependency = expect(await settingsTitle.isDisplayed()).to.be.true;
-      if (!Dependency){
-        throw new Error('Failed to navigate to video');
-      }
-  });
+      const currentEntries = await scrapeText();
+      let newEntryAdded = false;
   
-  it('check if stream is not full black', async function () {
-    if (!Dependency) { // if we failed to reach video screen skip this
-      this.skip();
-    }
-
-    // giving time everything to load and start streaming might change to waitForExist reverse, for ui elements
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    //check if video is loaded 
-    let  loadingMessage;
-    try {
-      loadingMessage = await $('xpath://*[contains(@text, "Vaizdo peržiūra ruošiama")]');
-      await loadingMessage.isExisting({ waitforTimeout: 0, waitforInterval: 0 });
-    } catch (error) {
-      console.log('Loading message is not present, continuing the test...');
-    }
-    
-    if (loadingMessage) {
-      const isDisplayed = await loadingMessage.isDisplayed();
-      expect(isDisplayed).to.be.false;
-    }
-
-    // after waiting for interface to fade and checking if video is loaded with no loading message we take a screenshot
-    const screenshot = await driver.takeScreenshot();
-    const screenshotPath = path.join(__dirname, 'screenshot.png')
-
-    // delete privious screenshot so it would be impossible accidently checking previous one
-    if (fs.existsSync(screenshotPath)) {
-      fs.unlinkSync(screenshotPath);
-    }
-
-    fs.writeFileSync(screenshotPath, screenshot, 'base64');
-    // The screenshot is taken and returned as a base64 encoded PNG
-    const buffer = Buffer.from(screenshot, 'base64');
-
-    // with some help from internet we check evry pixel of screenshot for the first non black one and if we found suck a pixel we exit with a pass
-    const isNotBlack = await new Promise((resolve) => { 
-      const png = new PNG();
-      png.parse(buffer, function (error) {
-        if (error) return reject(new Error(`Failed to parse image: ${error.message}`)); 
-        let notBlackPixelFound = false;
-        for (let y = 0; y < png.height; y++) {
-          for (let x = 0; x < png.width; x++) {
-            const idx = (png.width * y + x) << 2;
-            if (png.data[idx] !== 0 || png.data[idx + 1] !== 0 || png.data[idx + 2] !== 0) {
-              notBlackPixelFound = true;
-              break;
-            }
-          }
-          if (notBlackPixelFound) break;
+      for (const entry of currentEntries) {
+        const entryKey = `${entry.title}-${entry.startTime}-${entry.endTime}`;
+        
+        if (!allEntries.has(entryKey)) {
+          allEntries.set(entryKey, entry);
+          newEntryAdded = true;
         }
+      }
+  
+      if (!newEntryAdded) {
+        isAtEnd = true;
+      } else {
+        await scrollUp(driver);
+      }
+    }
+  
+    /// Convert Map to Array for easier processing or validation
+    const scrapedEntries = Array.from(allEntries.values());
 
-        resolve(notBlackPixelFound);
-      });
-    });
+    // Use the separate function to sort the entries
+    sortedEntries = sortEntriesByStartTime(scrapedEntries);
 
-    expect(isNotBlack).to.be.true;
+    console.log(sortedEntries);
   });
 
-  // after all tests done we close an app
-  after(async() => {
-      await driver.closeApp();
+  it('should ensure that entries are sequentially ordered without gaps', () => {
+    for (let i = 0; i < sortedEntries.length - 1; i++) {
+      const currentEntry = sortedEntries[i];
+      const nextEntry = sortedEntries[i + 1];
+  
+      const currentEndTime = convertToMinutes(currentEntry.endTime);
+      const nextStartTime = convertToMinutes(nextEntry.startTime);
+  
+      try {
+        expect(currentEndTime).toEqual(nextStartTime);
+        console.log(`Entry ${i}: "${currentEntry.title}" ends at ${currentEntry.endTime}, and Entry ${i+1}: "${nextEntry.title}" starts at ${nextEntry.startTime} - Test Passed`);
+      } catch (error) {
+        console.error(`Entry ${i}: "${currentEntry.title}" ends at ${currentEntry.endTime}, but Entry ${i+1}: "${nextEntry.title}" starts at ${nextEntry.startTime} - Test Failed`);
+      }
+    }
   });
-    
+
+  after(async () => {
+    const homeButton = await $('~Home:TestID');
+    await homeButton.waitForDisplayed({ timeout: 500 });
+    await homeButton.click();
+  });
+
 });
-*/

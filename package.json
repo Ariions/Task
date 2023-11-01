@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "wdio": "wdio run ./wdio.conf.js"
+    "wdio": "wdio run ./wdio.conf.js",
+    "test:stage1": "mocha test/specs --grep @stage1",
+    "test:stage2": "mocha test/specs --grep @stage2"
   },
   "keywords": [],
   "author": "",

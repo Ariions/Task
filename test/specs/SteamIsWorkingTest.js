@@ -1,10 +1,12 @@
+const chai = require('chai');
+const expect = chai.expect;
+
 describe('Is promoted video loaded and stream works @stage2', function () {
-    const chai = require('chai');
-    const expect = chai.expect;
     const PNG = require('pngjs').PNG;
     const fs = require('fs');
     const path = require('path');
-  
+
+
     let Dependency = false; // i use this to kill next test if first one fails
   
     before(async() => {
@@ -90,3 +92,4 @@ describe('Is promoted video loaded and stream works @stage2', function () {
     });
       
   });
+  

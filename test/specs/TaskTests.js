@@ -1,7 +1,7 @@
-describe('Disable Vod recording functionality and check if it doesnt work @stage1', () => {
-  const chai = require('chai');
-  const expect = chai.expect;
+const chai = require('chai');
+const expect = chai.expect;
 
+describe('Disable Vod recording functionality and check if it doesnt work @stage1', () => {
   before(() => {
       
   });

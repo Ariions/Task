@@ -1,61 +1,48 @@
-describe('Settings page funtionality', () => {
-  before(async() => {
-    //await driver.back(); we will go back if i dont see main page and no login page
-    // should make sure i am in main page
-  });
-
-  it('navigate to settings page', async () => {
-    const settingsButton = await $('xpath://*[contains(@content-desc, "settings")]'); // settings have no accesability id at least i cannot find it with release build
-    await settingsButton.click();
-    
-    const settingsTitle = await $('~settingsMainViewTestID'); // enlgish and has no : bedfore TestID
-    await settingsTitle.waitForDisplayed({ timeout: 100 }); 
-    
-    expect(await settingsTitle.isDisplayed()).to.be.true;
-  });
-
-  it('check if settings page has all the content', async () => {
-    //TODO:: add all buttons
-    const languageChangeButton = await $('~Kalbos pasirinkimas:TestID'); // lithuanian and has :
-    const moreSettingsButton = await $('~Kiti nustatymai:TestID');
-    const aboutButton = await $('~Apie:TestID');
-    
-    expect(await languageChangeButton.isDisplayed()).to.be.true;
-    expect(await moreSettingsButton.isDisplayed()).to.be.true;
-    expect(await aboutButton.isDisplayed()).to.be.true;
-  });
-  // i would continue this to check every page but it would not be different from examples above so i wont
-  it('navigate back to main screen', async () => {
-    const aboutButton = await $('~Navigate up'); // accesability id english and no : or testID
-    await aboutButton.click();
-  });
-
-  // good place to check for correct version but that would require access to the git to check what is the newest version
-});
-
 // User can login  to his account (we will pass login) and order new VOD record 
 describe('Order Vod recording functionality', () => {
   before(() => {
       
   });
 
-  it('navigate to video and order Vod', async () => {
+  it('navigate to settings and disable Vod with pin', async () => {
+    // open settings
     const settingsButton = await $('xpath://*[contains(@content-desc, "settings")]'); // settings have no accesability id at least i cannot find it with release build
     await settingsButton.click();
+
+    // move to more settings
     const additionalSettingsButton = await $('xpath://*[contains(@content-desc, "Kiti nustatymai:TestID")]'); // settings have no accesability id at least i cannot find it with release build
     await additionalSettingsButton.click();
+
+    // open channel setting
     const channelSettingsButton = await $('~Kanalų nustatymai:TestID'); // settings have no accesability id at least i cannot find it with release build
     await channelSettingsButton.click();
+
+    // toggle toggle
     const vodToggle = await $('~settingsToggleTestID'); // settings have no accesability id at least i cannot find it with release build
     await vodToggle.click();
+
+    // select first input square 
     const numberInput = await driver.$('~pinInputModalTestID');
     await numberInput.click();
+
+    // ideally i would encrypt this but i didnt want to spend time on this yet first wanna do other tests and cosidering this is an internal testing file should be fine without any
     await driver.pressKeyCode(14);
     await driver.pressKeyCode(15);
     await driver.pressKeyCode(16);
     await driver.pressKeyCode(7);
+
+    // comfirm input
     const comfirmButton = await $('~pinChange:confirm:TestID');
-    await comfirmButton.click();   
+    await comfirmButton.click();  
+    
+    // check if toggle is disabled
+    const isToggleEnabled = await vodToggle.getAttribute('checked');
+    expect(isToggleEnabled).to.equal('false');
+
+
+    // exit out to main screen with 3 back gestures
+    for(let  i= 0; i<3; i++) await driver.back();
+
   });
 
   it('check if vod is downloaded', async () => {

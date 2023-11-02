@@ -66,7 +66,7 @@ describe('@stage1 Disable Vod recording functionality and check if it doesnt wor
 
   // 1.4 going to a tv show that will be shown to ckeck if we will get a recoding
   it('confirm if vod is disabled', async () => {
-
+    /*
     // this promotional message is bane of this test it happens one an hour or so as i cant reset i have to just check for it
     let  promotionalMessage;
     /* i need this for not a testing build and it takes quite a bit of time
@@ -80,17 +80,17 @@ describe('@stage1 Disable Vod recording functionality and check if it doesnt wor
       const closePromotionalMessageButton =   await $('//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.view.ViewGroup[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.view.ViewGroup/android.widget.TextView');
       if(closePromotionalMessageButton) await closePromotionalMessageButton.click();  
     }
-    */
+    */  
     const tvChannelsButton = await $('~TV Kanalai:TestID'); 
     await tvChannelsButton.click();
 
-    const additionalSettingsButton = await $('xpath://*[contains(@text, "Programa")]');// TVProgramme:TestID was not consistant between pages
+    const additionalSettingsButton = await $('xpath://*[contains(@text, "Programa")]');// TVtvProgram:TestID was not consistant between pages
     await additionalSettingsButton.waitForDisplayed({ timeout: 500 });
     await additionalSettingsButton.click();
 
     // this most definetly could be done better but for now it works
-    const nextProgrammeInfoButton = await $('//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup[9]');
-    await nextProgrammeInfoButton.click();
+    const nexttvProgramInfoButton = await $('//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup[9]');
+    await nexttvProgramInfoButton.click();
 
     let  RemoveVodButton;
     try {
@@ -216,7 +216,7 @@ describe('@stage1 LRT Programm Content validity', () => {
     sortedEntries = sortEntriesByStartTime(scrapedEntries);
   });
 
-  // 2.3 we check if tv programme 1 end time is the same as tv programme 2 start time for all of them this ensures no gaps or climbing over each others time 
+  // 2.3 we check if tv tvProgram 1 end time is the same as tv tvProgram 2 start time for all of them this ensures no gaps or climbing over each others time 
   it('should ensure that entries are sequentially ordered without gaps', () => {
     for (let i = 0; i < sortedEntries.length - 1; i++) {
       const currentEntry = sortedEntries[i];
@@ -238,74 +238,73 @@ describe('@stage1 LRT Programm Content validity', () => {
 });
 
 // 3 test that goes to the current live tv recording and checks if additional info is correct
-describe('@stage2 Is Current programme description is correct and video shown is the same time as the indicator', function () {
+describe('@stage2 Is Current tvProgram description is correct and video shown is the same time as the indicator', function () {
   const { scrapeText, convertToMinutes, getFormattedDate } = require('../../additional scripts/helperFunctions');
   if (!driver) {
     throw new Error('Driver is not initialized');
   }
-  // 3.1 simple navigate to the programme
-  it('navigate to Programme page', async () => {
+  // 3.1 simple navigate to the tvProgram
+  it('navigate to TV Program page', async () => {
     const tvChannelsButton = await $('~TV Kanalai:TestID');
     await tvChannelsButton.click();
 
-    const programmesButton = await $('xpath://*[contains(@text, "Programa")]');
-    await programmesButton.waitForDisplayed({ timeout: 1000 });
-    await programmesButton.click();
+    const tvProgramsButton = await $('xpath://*[contains(@text, "Programa")]');
+    await tvProgramsButton.waitForDisplayed({ timeout: 1000 });
+    await tvProgramsButton.click();
   });
 
   // i will scrape information in one test so if there is a failed test it is more clear why
-  let liveProgrammeInfo;
+  let livetvProgramInfo;
   let liveIndexes;
   let Dependency = false;
 
-  // 3.2 we find Live programme and scrape its data also confirming that there is a live programme
-  it('check that current channel has a live programme', async () => {
+  // 3.2 we find Live tvProgram and scrape its data also confirming that there is a live tvProgram
+  it('check that current channel has a live tvProgram', async () => {
     const LiveText = await $('xpath://*[contains(@content-desc, "Tiesiogiai:TestID")]');
     Dependency = await LiveText.waitForDisplayed({ timeout: 10000 });
     //await LiveText.click();
 
     // get scraped text
     const result = await scrapeText(driver, true);
-    liveProgrammeInfo = result.combinedTexts;
+    livetvProgramInfo = result.combinedTexts;
     liveIndexes = result.liveIndexes;
 
-    console.log(liveProgrammeInfo);
+    console.log(livetvProgramInfo);
     console.log(liveIndexes);
   });
 
-  // 3.3 we take gathered info and double check it with the info page for live programme 
+  // 3.3 we take gathered info and double check it with the info page for live tvProgram 
   it('navigate to info panel and check if infromation is correct', async () => {
     if (!Dependency) { // if we failed to reach video screen skip this
       this.skip();
     }
 
     const firstLiveIndex = liveIndexes[0];
-    const firstliveProgrammeInfo = liveProgrammeInfo[0];
+    const firstlivetvProgramInfo = livetvProgramInfo[0];
     
     const LiveBoxSelector = `//android.widget.ScrollView/android.view.ViewGroup/android.view.ViewGroup[${firstLiveIndex.groupIndex+1}]`;
     const liveBox = await $(LiveBoxSelector);
     await liveBox.click();
     /* title i have also has genre that complicates things alot
     //craft what id should be and check if we can find sush id
-    const titleId = `~${firstliveProgrammeInfo.title}:TestID`
+    const titleId = `~${firstlivetvProgramInfo.title}:TestID`
 
-    const programmeTitle = await $(titleId); 
-    await programmeTitle.waitForDisplayed({ timeout: 500 }); 
-    expect(await programmeTitle.isDisplayed()).to.be.true;
+    const tvProgramTitle = await $(titleId); 
+    await tvProgramTitle.waitForDisplayed({ timeout: 500 }); 
+    expect(await tvProgramTitle.isDisplayed()).to.be.true;
     */
 
     // correct date start time and duration is displayed
-    const timeID = `~${getFormattedDate()} ${firstliveProgrammeInfo.startTime} · ${convertToMinutes(firstliveProgrammeInfo.endTime) - convertToMinutes(firstliveProgrammeInfo.startTime)} min:TestID`;
+    const timeID = `~${getFormattedDate()} ${firstlivetvProgramInfo.startTime} · ${convertToMinutes(firstlivetvProgramInfo.endTime) - convertToMinutes(firstlivetvProgramInfo.startTime)} min:TestID`;
     console.log(timeID);
-    const programmeInfo = await $(timeID); 
-    await programmeInfo.waitForDisplayed({ timeout: 500 }); 
-    expect(await programmeInfo.isDisplayed()).to.be.true;
+    const tvProgramInfo = await $(timeID); 
+    await tvProgramInfo.waitForDisplayed({ timeout: 500 }); 
+    expect(await tvProgramInfo.isDisplayed()).to.be.true;
 
   });
 
   // this would be a good place to go watch is and check if it is okay but because 
   // 4th test suite is very similar in nature i didnt want to double up same code too much
-
 
   // again we just go back to the start
   after(async () => {
@@ -319,7 +318,7 @@ describe('@stage2 Is Current programme description is correct and video shown is
 // NOTE!!! screenshot now only works with emulator as i need app premition to take a screenshot and it is not in telia.apk manifest
 // also i need premition to read and write into external storage testing pc in this case
 // 4 Test to load a video stream and check if it is loaded, if it doesnt have still loading message, and stream itself isnt black frame
-describe('@stage2 Is promoted video loaded and stream works', function () {
+describe('@stage2 promoted video loaded and stream works', function () {
     const PNG = require('pngjs').PNG;
     const fs = require('fs');
     const path = require('path');

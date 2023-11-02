@@ -1,0 +1,59 @@
+usefull links https://www.temblast.com/ref/akeyscode.htm
+
+to set up appium commands 
+// if needed nodejs isntall
+sudo apt-get install nodejs npm
+
+npm install -g appium
+npm install -g @wdio/cli
+npm init -y
+wdio config
+npm install @wdio/appium-service --save-dev
+npm install chai --save-dev
+npm install pngjs --save
+
+//run tests 
+npx wdio run wdio.conf.js
+//config might need these 
+ specs: [
+        './test/specs/**/*.js'
+        // ToDo: define location for spec files here
+    ],
+	
+	capabilities: [{
+        platformName: 'Android',
+        browserName: '', // Needed for WebdriverIO, even if it's empty
+        "appium:noReset": true,
+        "appium:fullReset": false,
+        "appium:dontStopAppOnReset": false,
+        'appium:platformVersion': '11.0',
+        'appium:deviceName': 'nightwatch-android-11',
+        'appium:app': 'E:/Repositories/Telia.apk',
+        'appium:automationName': 'UiAutomator2',
+        'appium:appPackage': 'com.teliacompany.lt.teliatv',
+        'appium:appActivity': 'com.teliacompany.lt.teliatv.MainActivity'
+    }],
+	
+	
+	capabilities: [{
+        platformName: 'Android',
+        browserName: '', // Needed for WebdriverIO, even if it's empty
+        "appium:noReset": true,
+        "appium:fullReset": false,
+        "appium:dontStopAppOnReset": false,
+        'appium:platformVersion': '12.0',
+        'appium:deviceName': 'Arnas S22+', // Updated device name
+        'appium:udid': 'RFCT610VZNY', // Device ID
+        'appium:app': 'E:/Repositories/Telia.apk',
+        'appium:automationName': 'UiAutomator2',
+        'appium:appPackage': 'com.teliacompany.lt.teliatv',
+        'appium:appActivity': 'com.teliacompany.lt.teliatv.MainActivity'
+    }],
+	
+	
+
+	
+	 mochaOpts: {
+        ui: 'bdd',
+        timeout: 60000
+    },

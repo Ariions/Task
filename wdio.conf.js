@@ -66,7 +66,7 @@ exports.config = {
         "appium:platformVersion": "11.0",
 	    "appium:deviceName": "nightwatch-android-11",
 
-        'appium:app': 'E:/Repositories/Telia.apk',
+        'appium:app': './Apk/Telia.apk',
         'appium:automationName': 'UiAutomator2',
         'appium:appPackage': 'com.teliacompany.lt.teliatv',
         'appium:appActivity': 'com.teliacompany.lt.teliatv.MainActivity'

@@ -56,8 +56,16 @@ exports.config = {
         "appium:noReset": true,
         "appium:fullReset": false,
         "appium:dontStopAppOnReset": false,
-        'appium:platformVersion': '11.0',
-        'appium:deviceName': 'nightwatch-android-11',
+        
+        // my physical device
+        //'appium:platformVersion': '12.0',
+        //'appium:deviceName': 'Arnas S22+', // Updated device name
+        //'appium:udid': 'RFCT610VZNY', // Device ID
+
+        // emulator
+        "appium:platformVersion": "11.0",
+	    "appium:deviceName": "nightwatch-android-11",
+
         'appium:app': 'E:/Repositories/Telia.apk',
         'appium:automationName': 'UiAutomator2',
         'appium:appPackage': 'com.teliacompany.lt.teliatv',

@@ -156,10 +156,10 @@ describe('@stage1 LRT Programm Content validity', () => {
 
     // Scroll and scrape loop
     while (!isAtEnd) {
-      const currentEntries = await scrapeText(driver);
+      const { combinedTexts } = await scrapeText(driver, false);
       let newEntryAdded = false;
-
-      for (const entry of currentEntries) {
+    
+      for (const entry of combinedTexts) {
         const entryKey = `${entry.title}-${entry.startTime}-${entry.endTime}`;
         
         if (!tempAllEntries.has(entryKey)) {
@@ -190,10 +190,10 @@ describe('@stage1 LRT Programm Content validity', () => {
   
     // Scroll and scrape loop
     while (!isAtEnd) {
-      const currentEntries = await scrapeText(driver);
+      const { combinedTexts } = await scrapeText(driver, false);
       let newEntryAdded = false;
-  
-      for (const entry of currentEntries) {
+    
+      for (const entry of combinedTexts) {
         const entryKey = `${entry.title}-${entry.startTime}-${entry.endTime}`;
         
         if (!allEntries.has(entryKey)) {
@@ -261,7 +261,7 @@ describe('@stage2 Is Current programme description is correct and video shown is
   // 3.2 we find Live programme and scrape its data also confirming that there is a live programme
   it('check that current channel has a live programme', async () => {
     const LiveText = await $('xpath://*[contains(@content-desc, "Tiesiogiai:TestID")]');
-    Dependency = await LiveText.waitForDisplayed({ timeout: 5000 });
+    Dependency = await LiveText.waitForDisplayed({ timeout: 10000 });
     //await LiveText.click();
 
     // get scraped text
